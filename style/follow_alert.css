@@ -1,0 +1,33 @@
+.bg-image, .overlay-text  {
+	opacity: 0;
+}
+
+.bg-image {
+	position: absolute;
+	top: 0;
+	left: -20px;
+	z-index: 0;
+}
+
+.overlay-text {
+	display: inline-block;
+	position: absolute;
+	font-family: "overwatch";
+	font-size: 44pt;
+	color: #FFFFFF;
+	letter-spacing: 1px;
+	text-shadow: 3px 2px 0 #164258;
+	z-index: 1;
+}
+
+.first-row {
+	top: 10px;
+	left: 17px;
+}
+
+.second-row {
+	top: 85px;
+	left: 13px;
+}
+
+ /* NB: All 'left' values are calculated with -20 px

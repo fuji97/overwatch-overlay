@@ -1,0 +1,70 @@
+.overlay-image {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	z-index: 1;
+}
+
+.progress-wrapper {
+	position: absolute;
+	left: 80px;
+	top: 1px;
+	width: 453px;
+	height: 60px;
+	z-index: 0;
+	overflow: hidden;
+}
+
+.progress-wrapper > span {
+	width: 0%;
+	height: 100%;
+	display: inline-block;
+	background-color: #ffda68;
+
+}
+
+.percentage-text {
+	position: absolute;
+	display: inline-block;
+	top: 5px;
+	left: 207px;
+	width: 200px;
+	font-family: "overwatch";
+	text-align: center;
+	font-size: 23pt;
+	color: #fafafa;
+	text-shadow: 2px 2px 0 #6a6a6a;
+	letter-spacing: 1px;
+	z-index: 2;
+}
+
+.start {
+	letter-spacing: normal !important;
+	width: 40px !important;
+	color: #FFFFFF !important;
+	left: 24px !important;
+	text-shadow: none !important;
+}
+
+.end {
+	letter-spacing: normal !important;
+	width: 40px !important;
+	color: #FFFFFF !important;
+	left: 548px !important;
+	text-shadow: none !important;
+}
+
+.subtext {
+	position: absolute;
+	display: inline-block;
+	top: 46px;
+	left: 87px;
+	width: 440px;
+	text-align: center;
+	font-family: "overwatch";
+	font-size: 23pt;
+	color: #333333;
+	position: absolute;
+	display: inline-block;
+	z-index: 2;
+}
