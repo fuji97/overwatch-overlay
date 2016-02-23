@@ -1,13 +1,18 @@
-// Imposta queste variabili
-var APPEND_TEXT = 'to go';
-var EXPIRED_TEXT = 'Time out!';
-var UPDATE_EVERY_MS = 10000;
+// ====================================================
+// SETTINGS
+// ====================================================
+var append_text = 'to go';
+var expired_text = 'Time out!';
+var update_every_ms = 10000;
+var user = "shagoonh";
+var network = "twitch";
+var no_period_text = "Donation started on ";
 
+// ===================================================
+// FROM HERE, DON'T TOUCH
+// ====================================================
 var requestFinished = true;
-var access_token = "";
-var min = "";
-var max = "";
-var finishData = "";
+var endDateExist = false;
 var getUrlParameter = function getUrlParameter(sParam) {
     var sPageURL = decodeURIComponent(window.location.search.substring(1)),
         sURLVariables = sPageURL.split('&'),
@@ -18,17 +23,18 @@ var getUrlParameter = function getUrlParameter(sParam) {
         sParameterName = sURLVariables[i].split('=');
 
         if (sParameterName[0] === sParam) {
-            return sParameterName[1] === undefined ? true : sParameterName[1];
+            return sParameterName[1] === undefined ? false : sParameterName[1];
         }
     }
 };
 
-var setBarValue = function setBarValue(sPercentage, sMin, sMax, sText, sMoney) {
+var setBarValue = function setBarValue(sTitle,sPercentage, sMin, sMax, sText, sMoney, sCurrency) {
 	if (sPercentage != undefined) $('.progress-wrapper span:first').css('width',sPercentage + '%');
-	if (sPercentage != undefined) $('.percentage-text').html('€ ' + sMoney + ' - ' + sPercentage + '%');
+	if (sPercentage != undefined) $('.percentage-text').html(sCurrency + ' ' + sMoney + ' (' + sPercentage + '%)');
 	if (sMin != undefined) $('#start').html(sMin);
 	if (sMax != undefined) $('#end').html(sMax);
 	if (sText != undefined) $('.subtext').html(sText);
+	if (sTitle != undefined) $('.title').html(sTitle);
 }
 
 function generateRemainingText(start, end) {
@@ -37,7 +43,7 @@ function generateRemainingText(start, end) {
 	var yy,dd = false;
 	var secondsToGo = end.getTime() - start.getTime();
 	if (secondsToGo <= 0) {
-		return EXPIRED_TEXT;
+		return expired_text;
 	}
 	var yearsToGo = Math.floor(secondsToGo / 31536000000);
 	var restYears = secondsToGo % 31536000000;
@@ -64,37 +70,39 @@ function generateRemainingText(start, end) {
 			ret += minutesToGo + ( minutesToGo==1 ? ' minute ' : ' minutes ');
 		}
 	}
-	return ret + APPEND_TEXT;
+	return ret + append_text;
 }
 
 function checkUpdate() {
 	if (requestFinished) {
-		console.log('Start GET request');
 		$.ajax({
 			crossDomain: true,
 			type: "GET",
 			contentType: "application/json; charset=utf-8",
-			url: 'https://www.twitchalerts.com/api/donations',
-			dataType: "json",
-			callback: "prova",
-			data: {access_token: access_token},
+			url: 'https://streamtip.com/api/public/'+ network + '/' + user + '/goal',
+			dataType: "jsonp",
 			success: function(data) {
-				console.log('Data received');
 				requestFinished = false;
+				var parsed = data;
 				// Getting up variables to set on bar
-				var amount = (0).toFixed(2);
-				for (donation in data.donations) {
-					amount += donation.amount;
+				var min = 0;
+				var max = Math.round(parsed.goal.amount);
+				var percentage = parsed.goal.progress.percentage;
+				// Check if an end date is setted
+				if (parsed.goal.endDate) {
+					// Calculating remaining days
+					var nowDay = new Date();
+					var endDate = new Date(parsed.goal.endDate);
+					var secondsToGo = endDate.getTime() - nowDay.getTime();
+					var text = generateRemainingText(nowDay, endDate);
+				} else {
+					var date = new Date(parsed.goal.startDate);
+					var text = no_period_text + date.toLocaleDateString();
 				}
-				var percentage = amount / max * 100
-				if (percentage > 100) {percentage = 100;}
-				console.log('Amount: €' + amount + ' (' + percentage + '%)');
-				// Calculating remaining days
-				var nowDay = new Date();
-				var endDate = new Date(finishData);
-				var secondsToGo = endDate.getTime() - nowDay.getTime();
-				var text = generateRemainingText(nowDay, endDate);
-				setBarValue(percentage,min,max,text,amount);
+				var title = parsed.goal.title;
+				var money = parsed.goal.progress.amount;
+				var symbol = parsed.goal.progress.currencySymbol;
+				setBarValue(title,percentage,min,max,text,money,symbol);
 				requestFinished = true;
 			}
 		});
@@ -102,13 +110,15 @@ function checkUpdate() {
 }
 
 $(document).ready(function() {
-	access_token = getUrlParameter('access_token');
-	min = getUrlParameter('min');
-	max = getUrlParameter('max');
-	finishData = getUrlParameter('finish');
+	network = getUrlParameter('network') || network;
+	user = getUrlParameter('user') || user;
+	append_text = getUrlParameter('append') || append_text;
+	expired_text = getUrlParameter('expired') || expired_text;
+	no_period_text = getUrlParameter('no_period') || no_period_text;
+	var update_get = parseInt(getUrlParameter('update'));
+	if (!isNaN(update_get)) update_every_ms = update_get;
 
-	console.log('access_token: ' + access_token + '\nmin: ' + min + '\nmax: ' + max + '\ndate: ' + new Date(finishData).toString())
 	checkUpdate();
-	setInterval(function() {checkUpdate();}, UPDATE_EVERY_MS);	
+	setInterval(function() {checkUpdate();}, update_every_ms);	
 });
 
